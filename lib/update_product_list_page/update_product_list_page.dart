@@ -8,6 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import '../models/Product.dart';
+import '../utils.dart';
 
 class UpdateProductListPageWidget extends StatefulWidget {
   const UpdateProductListPageWidget({
@@ -71,7 +72,7 @@ class _UpdateProductListState extends State<UpdateProductListPageWidget> {
             AsyncSnapshot<QuerySnapshot<Product>> snapshot) {
           if (snapshot.hasError) return Text('Something went wrong');
           if (snapshot.connectionState == ConnectionState.waiting)
-            return CircularProgressIndicator();
+            return ProgressDialogPrimary();
 
           Map<String, Product> products = Map.fromIterable(snapshot.data!.docs,
               key: (item) => item.id, value: (item) => item.data());
@@ -83,30 +84,37 @@ class _UpdateProductListState extends State<UpdateProductListPageWidget> {
             itemCount: products.length,
             itemBuilder: (context, index) {
               String key = products.keys.elementAt(index);
-              return ListTile(
-                leading: products[key]!.img_url == null
-                    ? Image.asset('assets/images/logo.jpg')
-                    : Image.network(
-                        products[key]!.img_url ??
-                            'https://docs.flutter.dev/assets/images/dash/dash-fainting.gif',
-                        errorBuilder: (BuildContext context, Object exception,
-                            StackTrace? stackTrace) {
-                        return Text('no image');
-                      }),
-                title: Text(products[key]!.name ?? ""),
-                trailing: IconButton(
-                  onPressed: () => {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => UpdateProductPageWidget(
-                              docKey: key, product: products[key])),
-                    )
-                  },
-                  icon: Icon(
-                    Icons.edit,
-                    color: Colors.blue,
-                    size: 45,
+              return Padding(
+                padding: EdgeInsets.all(10),
+                child: ListTile(
+                  leading: products[key]!.img_url == null
+                      ? Image.asset('assets/images/logo.jpg')
+                      : Image.network(
+                          products[key]!.img_url ??
+                              'https://docs.flutter.dev/assets/images/dash/dash-fainting.gif',
+                          errorBuilder: (BuildContext context, Object exception,
+                              StackTrace? stackTrace) {
+                          return Text('no image');
+                        }),
+                  title: Text(products[key]!.name ?? "",
+                      style: FlutterFlowTheme.of(context).bodyText2.override(
+                            fontFamily: 'Playfair Display',
+                            fontSize: 16,
+                          )),
+                  trailing: IconButton(
+                    onPressed: () => {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => UpdateProductPageWidget(
+                                docKey: key, product: products[key])),
+                      )
+                    },
+                    icon: Icon(
+                      Icons.edit,
+                      color: Colors.blue,
+                      size: 45,
+                    ),
                   ),
                 ),
               );

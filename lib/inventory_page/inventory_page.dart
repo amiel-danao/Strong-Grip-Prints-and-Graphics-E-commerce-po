@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:strong_grip_prints_admin/models/Quantity.dart';
 import 'package:strong_grip_prints_admin/string_extension.dart';
 import 'package:strong_grip_prints_admin/update_product_page/update_product_page.dart';
 
@@ -8,6 +9,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import '../models/Product.dart';
+import '../utils.dart';
 
 class InventoryListPageWidget extends StatefulWidget {
   const InventoryListPageWidget({
@@ -28,11 +30,29 @@ class _InventoryListState extends State<InventoryListPageWidget> {
 
   late FirebaseFirestore db;
   bool loading = false;
+  Map<String, Quantity> quantities = Map<String, Quantity>();
 
   @override
   void initState() {
     super.initState();
     db = FirebaseFirestore.instance;
+    getQuantities();
+  }
+
+  void getQuantities() async {
+    var snaps = await db
+        .collection("Quantities")
+        .withConverter<Quantity>(
+          fromFirestore: Quantity.fromFirestore,
+          toFirestore: (data, _) => data.toFirestore(),
+        )
+        .get();
+    setState(() {
+      // .snapshots();
+
+      quantities = Map.fromIterable(snaps.docs,
+          key: (item) => item.id, value: (item) => item.data());
+    });
   }
 
   @override
@@ -71,33 +91,42 @@ class _InventoryListState extends State<InventoryListPageWidget> {
             AsyncSnapshot<QuerySnapshot<Product>> snapshot) {
           if (snapshot.hasError) return Text('Something went wrong');
           if (snapshot.connectionState == ConnectionState.waiting)
-            return CircularProgressIndicator();
+            return ProgressDialogPrimary();
 
           Map<String, Product> products = Map.fromIterable(snapshot.data!.docs,
               key: (item) => item.id, value: (item) => item.data());
-
-          // List<Product> products =
-          //     snapshot.data!.docs.map((e) => e.id  e.data()).toList();
 
           return ListView.builder(
             itemCount: products.length,
             itemBuilder: (context, index) {
               String key = products.keys.elementAt(index);
-              return ListTile(
-                  leading: products[key]!.img_url == null
-                      ? Image.asset('assets/images/logo.jpg')
-                      : Image.network(
-                          products[key]!.img_url ??
-                              'https://docs.flutter.dev/assets/images/dash/dash-fainting.gif',
-                          errorBuilder: (BuildContext context, Object exception,
-                              StackTrace? stackTrace) {
-                          return Text('no image');
-                        }),
-                  title: Text(products[key]!.name ?? ""),
-                  trailing: TextFormField(
-                    onChanged: (value) => {},
-                    keyboardType: TextInputType.number,
-                  ));
+              return Padding(
+                  padding: EdgeInsets.all(10),
+                  child: ListTile(
+                      leading: products[key]!.img_url == null
+                          ? Image.asset('assets/images/logo.jpg')
+                          : Image.network(
+                              products[key]!.img_url ??
+                                  'https://docs.flutter.dev/assets/images/dash/dash-fainting.gif',
+                              errorBuilder: (BuildContext context,
+                                  Object exception, StackTrace? stackTrace) {
+                              return Text('no image');
+                            }),
+                      title: Text(products[key]!.name ?? "",
+                          style:
+                              FlutterFlowTheme.of(context).bodyText2.override(
+                                    fontFamily: 'Playfair Display',
+                                    fontSize: 16,
+                                  )),
+                      trailing: TextButton(
+                          onPressed: () =>
+                              _displayDialog(context, key, products[key]!),
+                          child: Text(quantities[key] == null
+                              ? '0'
+                              : quantities[key]!
+                                  .quantity!
+                                  .toInt()
+                                  .toString()))));
             },
           );
         },
@@ -115,14 +144,55 @@ class _InventoryListState extends State<InventoryListPageWidget> {
         .snapshots();
   }
 
-  String getFileName(String? url) {
-    if (url == null || url.trim().length == 0) return "";
-    RegExp regExp = new RegExp(r'.+(\/|%2F)(.+)\?.+');
-    //This Regex won't work if you remove ?alt...token
-    var matches = regExp.allMatches(url);
+  void _displayDialog(
+    BuildContext context,
+    String key,
+    Product product,
+  ) async {
+    String currentQuantity = quantities[key] == null
+        ? '0'
+        : quantities[key]!.quantity!.toInt().toString();
+    TextEditingController _textFieldController =
+        TextEditingController(text: currentQuantity);
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Update Quantity for ${product.name}'),
+            content: TextField(
+              keyboardType: TextInputType.number,
+              controller: _textFieldController,
+              decoration: InputDecoration(hintText: "Enter Quantity"),
+            ),
+            actions: [
+              TextButton(
+                  child: Text("Cancel"),
+                  onPressed: () {
+                    Navigator.pop(context, false);
+                  }
+                  //Navigator.of(context, rootNavigator: true).pop('dialog'),
+                  ),
+              new TextButton(
+                child: new Text('Save'),
+                onPressed: () async {
+                  var quantity = Quantity(
+                      quantity: int.tryParse(_textFieldController.text));
 
-    var match = matches.elementAt(0);
-    print("${Uri.decodeFull(match.group(2)!)}");
-    return Uri.decodeFull(match.group(2)!);
+                  final docNavRef = db
+                      .collection("Quantities")
+                      .withConverter(
+                        fromFirestore: Quantity.fromFirestore,
+                        toFirestore: (Quantity quantity, options) =>
+                            quantity.toFirestore(),
+                      )
+                      .doc(key);
+
+                  await docNavRef.set(quantity);
+                  Navigator.pop(context, false);
+                },
+              )
+            ],
+          );
+        });
   }
 }

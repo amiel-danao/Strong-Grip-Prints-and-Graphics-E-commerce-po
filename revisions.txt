@@ -1,0 +1,9 @@
+- order fragment
+- checkout page
+- yung upload design dapat nakalagay sa addtocart and currentuser
+- security
+- forgot password
+- change password
+- profile fragement
+- change profile
+if kaya hanggang next week tuesday pero yung upload design, order fragment tyaka checkout page kung pwede bukas agad

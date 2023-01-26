@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import '../models/Product.dart';
+import '../utils.dart';
 
 class DeleteProductPageWidget extends StatefulWidget {
   const DeleteProductPageWidget({
@@ -73,7 +74,7 @@ class _DeleteProductState extends State<DeleteProductPageWidget> {
             AsyncSnapshot<QuerySnapshot<Product>> snapshot) {
           if (snapshot.hasError) return Text('Something went wrong');
           if (snapshot.connectionState == ConnectionState.waiting)
-            return CircularProgressIndicator();
+            return ProgressDialogPrimary();
 
           Map<String, Product> products = Map.fromIterable(snapshot.data!.docs,
               key: (item) => item.id, value: (item) => item.data());
@@ -85,33 +86,40 @@ class _DeleteProductState extends State<DeleteProductPageWidget> {
             itemCount: products.length,
             itemBuilder: (context, index) {
               String key = products.keys.elementAt(index);
-              return ListTile(
-                leading: products[key]!.img_url == null
-                    ? Image.asset('assets/images/logo.jpg')
-                    : Image.network(
-                        products[key]!.img_url ??
-                            'https://docs.flutter.dev/assets/images/dash/dash-fainting.gif',
-                        errorBuilder: (BuildContext context, Object exception,
-                            StackTrace? stackTrace) {
-                        return Text('no image');
-                      }),
-                title: Text(products[key]!.name ?? ""),
-                trailing: IconButton(
-                  onPressed: () => {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return showAlertDialog(context, key, products[key]!);
+              return Padding(
+                  padding: EdgeInsets.all(10),
+                  child: ListTile(
+                    leading: products[key]!.img_url == null
+                        ? Image.asset('assets/images/logo.jpg')
+                        : Image.network(
+                            products[key]!.img_url ??
+                                'https://docs.flutter.dev/assets/images/dash/dash-fainting.gif',
+                            errorBuilder: (BuildContext context,
+                                Object exception, StackTrace? stackTrace) {
+                            return Text('no image');
+                          }),
+                    title: Text(products[key]!.name ?? "",
+                        style: FlutterFlowTheme.of(context).bodyText2.override(
+                              fontFamily: 'Playfair Display',
+                              fontSize: 16,
+                            )),
+                    trailing: IconButton(
+                      onPressed: () => {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return showAlertDialog(
+                                context, key, products[key]!);
+                          },
+                        )
                       },
-                    )
-                  },
-                  icon: Icon(
-                    Icons.delete,
-                    color: Colors.red,
-                    size: 45,
-                  ),
-                ),
-              );
+                      icon: Icon(
+                        Icons.delete,
+                        color: Colors.red,
+                        size: 45,
+                      ),
+                    ),
+                  ));
             },
           );
         },

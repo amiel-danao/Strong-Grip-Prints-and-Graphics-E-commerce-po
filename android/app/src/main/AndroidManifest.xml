@@ -2,7 +2,7 @@
     package="com.example.strong_grip_prints_admin">
    <uses-permission android:name="android.permission.CAMERA" />
    <application
-        android:label="strong_grip_prints_admin"
+        android:label="sgpgthesis-admin"
         android:name="androidx.multidex.MultiDexApplication"
         android:icon="@mipmap/ic_launcher">
         <activity
