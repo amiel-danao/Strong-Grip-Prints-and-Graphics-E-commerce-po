@@ -1,0 +1,83 @@
+{
+  "project_info": {
+    "project_number": "446778914478",
+    "firebase_url": "https://thesis-962c6-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "thesis-962c6",
+    "storage_bucket": "thesis-962c6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:446778914478:android:f6b79467106dbde77f9f3f",
+        "android_client_info": {
+          "package_name": "com.example.sgpgthesis"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "446778914478-tjcdq5e37bafhv55mf7drj5dcrl1id5m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBtQI_VquElKtdGpHswf8GqkWVM1o8u3lc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "446778914478-tjcdq5e37bafhv55mf7drj5dcrl1id5m.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "446778914478-sca4irjksv5lfmg3chdlh0vqp8glp7oj.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.strongGripPrintsAdmin"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:446778914478:android:a041e47d24edf5247f9f3f",
+        "android_client_info": {
+          "package_name": "com.example.strong_grip_prints_admin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "446778914478-tjcdq5e37bafhv55mf7drj5dcrl1id5m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBtQI_VquElKtdGpHswf8GqkWVM1o8u3lc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "446778914478-tjcdq5e37bafhv55mf7drj5dcrl1id5m.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "446778914478-sca4irjksv5lfmg3chdlh0vqp8glp7oj.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.strongGripPrintsAdmin"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
