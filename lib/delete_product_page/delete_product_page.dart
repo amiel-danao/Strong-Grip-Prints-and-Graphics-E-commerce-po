@@ -29,13 +29,13 @@ class _DeleteProductState extends State<DeleteProductPageWidget> {
   late FirebaseFirestore db;
   bool loading = false;
   late StreamController<bool> _events;
+  final Map<String, bool> productStates = Map();
 
   @override
   void initState() {
     super.initState();
     db = FirebaseFirestore.instance;
     _events = StreamController<bool>.broadcast();
-    //new StreamController<bool>();
   }
 
   @override
@@ -57,7 +57,7 @@ class _DeleteProductState extends State<DeleteProductPageWidget> {
           ),
         ),
         title: Text(
-          'Delete Product',
+          'Disable Product',
           style: FlutterFlowTheme.of(context).bodyText2.override(
                 fontFamily: 'Playfair Display',
                 fontSize: 18,
@@ -86,6 +86,10 @@ class _DeleteProductState extends State<DeleteProductPageWidget> {
             itemCount: products.length,
             itemBuilder: (context, index) {
               String key = products.keys.elementAt(index);
+              // setState(() {
+              //   productStates[key] = products[key]!.status;
+              // });
+
               return Padding(
                   padding: EdgeInsets.all(10),
                   child: ListTile(
@@ -103,23 +107,45 @@ class _DeleteProductState extends State<DeleteProductPageWidget> {
                               fontFamily: 'Playfair Display',
                               fontSize: 16,
                             )),
-                    trailing: IconButton(
-                      onPressed: () => {
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return showAlertDialog(
-                                context, key, products[key]!);
-                          },
-                        )
-                      },
-                      icon: Icon(
-                        Icons.delete,
-                        color: Colors.red,
-                        size: 45,
-                      ),
+                    trailing:
+                    Switch(
+                      // thumb color (round icon)
+                      activeColor: Colors.amber,
+                      activeTrackColor: Colors.cyan,
+                      inactiveThumbColor: Colors.blueGrey.shade600,
+                      inactiveTrackColor: Colors.grey.shade400,
+                      splashRadius: 50.0,
+                      // boolean variable value
+                      value: products[key]!.active??true,
+                      // changes the state of the switch
+                      onChanged: (value) async {
+                        var saved = await changeProductActiveStatus(key: key, product: products[key]!, active: value);
+                        if (saved) {
+                          setState(() {
+                            productStates[key] = value;
+                          });
+                        }
+                      }),
                     ),
-                  ));
+
+                    // IconButton(
+                    //   onPressed: () => {
+                    //     showDialog(
+                    //       context: context,
+                    //       builder: (BuildContext context) {
+                    //         return showAlertDialog(
+                    //             context, key, products[key]!);
+                    //       },
+                    //     )
+                    //   },
+                    //   icon: Icon(
+                    //     Icons.delete,
+                    //     color: Colors.red,
+                    //     size: 45,
+                    //   ),
+                    // ),
+
+                  );
             },
           );
         },
@@ -137,36 +163,29 @@ class _DeleteProductState extends State<DeleteProductPageWidget> {
         .snapshots();
   }
 
-  Future<bool> deleteProduct(
-      {required String key, required Product product}) async {
-    await db.collection("AllProducts").doc(key).delete().then(
+  Future<bool> changeProductActiveStatus(
+      {required String key, required Product product, required bool active}) async {
+    final data = {"active": active};
+    await db.collection("AllProducts").doc(key).set(data, SetOptions(merge: true)).then(
           (doc) => print("Document deleted"),
-          onError: (e) => print("Error updating document $e"),
+          onError: (e) {
+            print("Error updating document $e");
+            return false;
+          }
         );
 
     var typeCapitalized = product.type!.toCapitalized();
     var typeNavCollectionKey = "Nav$typeCapitalized";
 
-    await db.collection(typeNavCollectionKey).doc(key).delete().then(
+    await db.collection(typeNavCollectionKey).doc(key).set(data, SetOptions(merge: true)).then(
           (doc) => print("Document deleted"),
           onError: (e) => print("Error updating document $e"),
         );
 
-    await db.collection(typeCapitalized).doc(key).delete().then(
+    await db.collection(typeCapitalized).doc(key).set(data, SetOptions(merge: true)).then(
           (doc) => print("Document deleted"),
           onError: (e) => print("Error updating document $e"),
         );
-
-    String fileName = getFileName(product.img_url);
-    print("filename is : $fileName");
-    if (fileName.length > 0) {
-      final productRef =
-          firebase_storage.FirebaseStorage.instance.ref(fileName);
-
-      // Delete the file
-      await productRef.delete().then((value) => print("Firebase Image deleted"),
-          onError: (e) => print("Error updating document $e"));
-    }
 
     return true;
   }
@@ -186,7 +205,7 @@ class _DeleteProductState extends State<DeleteProductPageWidget> {
       onPressed: () async {
         _events.add(true);
 
-        var saved = await deleteProduct(key: key, product: product);
+        var saved = await changeProductActiveStatus(key: key, product: product, active: true);
         if (saved) {
           // Navigator.pop(context, false);
           Navigator.of(context, rootNavigator: true).pop('dialog');
@@ -202,10 +221,10 @@ class _DeleteProductState extends State<DeleteProductPageWidget> {
           _events.add(false);
         }
 
-        db.collection("AllProducts").doc(key).delete().then(
-              (doc) => print("Document deleted"),
-              onError: (e) => print("Error updating document $e"),
-            );
+        // db.collection("AllProducts").doc(key).delete().then(
+        //       (doc) => print("Document deleted"),
+        //       onError: (e) => print("Error updating document $e"),
+        //     );
       },
     );
 
@@ -228,16 +247,5 @@ class _DeleteProductState extends State<DeleteProductPageWidget> {
           }),
       actions: [cancelButton, continueButton],
     );
-  }
-
-  String getFileName(String? url) {
-    if (url == null || url.trim().length == 0) return "";
-    RegExp regExp = new RegExp(r'.+(\/|%2F)(.+)\?.+');
-    //This Regex won't work if you remove ?alt...token
-    var matches = regExp.allMatches(url);
-
-    var match = matches.elementAt(0);
-    print("${Uri.decodeFull(match.group(2)!)}");
-    return Uri.decodeFull(match.group(2)!);
   }
 }

@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Product {
@@ -9,6 +7,7 @@ class Product {
   final String? img_url;
   final num? price;
   final String? rating;
+  final bool? active;
 
   Product({
     this.name,
@@ -17,6 +16,7 @@ class Product {
     this.img_url,
     this.price,
     this.rating,
+    this.active
   });
 
   factory Product.fromFirestore(
@@ -31,6 +31,7 @@ class Product {
       img_url: data?['img_url'],
       price: data?['price'],
       rating: data?['rating'],
+      active: data?['active'],
     );
   }
 
@@ -42,6 +43,7 @@ class Product {
       if (img_url != null) "img_url": img_url,
       if (price != null) "price": price,
       if (rating != null) "rating": rating,
+      if (active != null) "active": active,
     };
   }
 }
