@@ -29,7 +29,6 @@ class _DeleteProductState extends State<DeleteProductPageWidget> {
   late FirebaseFirestore db;
   bool loading = false;
   late StreamController<bool> _events;
-  final Map<String, bool> productStates = Map();
 
   @override
   void initState() {
@@ -86,10 +85,6 @@ class _DeleteProductState extends State<DeleteProductPageWidget> {
             itemCount: products.length,
             itemBuilder: (context, index) {
               String key = products.keys.elementAt(index);
-              // setState(() {
-              //   productStates[key] = products[key]!.status;
-              // });
-
               return Padding(
                   padding: EdgeInsets.all(10),
                   child: ListTile(
@@ -119,32 +114,9 @@ class _DeleteProductState extends State<DeleteProductPageWidget> {
                       value: products[key]!.active??true,
                       // changes the state of the switch
                       onChanged: (value) async {
-                        var saved = await changeProductActiveStatus(key: key, product: products[key]!, active: value);
-                        if (saved) {
-                          setState(() {
-                            productStates[key] = value;
-                          });
-                        }
+                        await changeProductActiveStatus(key: key, product: products[key]!, active: value);
                       }),
                     ),
-
-                    // IconButton(
-                    //   onPressed: () => {
-                    //     showDialog(
-                    //       context: context,
-                    //       builder: (BuildContext context) {
-                    //         return showAlertDialog(
-                    //             context, key, products[key]!);
-                    //       },
-                    //     )
-                    //   },
-                    //   icon: Icon(
-                    //     Icons.delete,
-                    //     color: Colors.red,
-                    //     size: 45,
-                    //   ),
-                    // ),
-
                   );
             },
           );
@@ -167,7 +139,7 @@ class _DeleteProductState extends State<DeleteProductPageWidget> {
       {required String key, required Product product, required bool active}) async {
     final data = {"active": active};
     await db.collection("AllProducts").doc(key).set(data, SetOptions(merge: true)).then(
-          (doc) => print("Document deleted"),
+          (doc) => print("Document disabled"),
           onError: (e) {
             print("Error updating document $e");
             return false;
@@ -178,12 +150,12 @@ class _DeleteProductState extends State<DeleteProductPageWidget> {
     var typeNavCollectionKey = "Nav$typeCapitalized";
 
     await db.collection(typeNavCollectionKey).doc(key).set(data, SetOptions(merge: true)).then(
-          (doc) => print("Document deleted"),
+          (doc) => print("Document disabled"),
           onError: (e) => print("Error updating document $e"),
         );
 
     await db.collection(typeCapitalized).doc(key).set(data, SetOptions(merge: true)).then(
-          (doc) => print("Document deleted"),
+          (doc) => print("Document disabled"),
           onError: (e) => print("Error updating document $e"),
         );
 
@@ -208,7 +180,7 @@ class _DeleteProductState extends State<DeleteProductPageWidget> {
         var saved = await changeProductActiveStatus(key: key, product: product, active: true);
         if (saved) {
           // Navigator.pop(context, false);
-          Navigator.of(context, rootNavigator: true).pop('dialog');
+          // Navigator.of(context, rootNavigator: true).pop('dialog');
           // await Navigator.push(
           //   context,
           //   MaterialPageRoute(
